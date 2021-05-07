@@ -1,9 +1,21 @@
 <script lang="ts">
+	import SectorWheel from "./SectorWheel.svelte";
+
 	export let name: string;
 </script>
 
 <main>
 	<h1>Hello {name}!</h1>
+
+	<svg viewBox="0 0 500 500" height="400" width="400">
+		<SectorWheel
+			centerX={250}
+			centerY={250}
+			radius={200}
+			thickness={20}
+			sectorCount={12}
+		/>
+	</svg>
 </main>
 
 <style>
