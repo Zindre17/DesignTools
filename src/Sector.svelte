@@ -1,10 +1,8 @@
 <script lang="ts">
-    import {
-        chooseArcFlag,
-        chooseSweepFlag,
-        PathBuilder,
-        polarToCartesian,
-    } from "./lib/path";
+    import { linear } from "svelte/easing";
+    import { tweened } from "svelte/motion";
+
+    import { getSectorPath } from "./lib/svg/sector";
 
     export let centerX = 0;
     export let centerY = 0;
@@ -13,51 +11,41 @@
     export let endAngle: number;
     export let thickness: number;
     export let color: string;
+    export let isExpanded: boolean = false;
 
-    function getPathData() {
-        // Sector is drawn from points 1 to 4
-        //        ____
-        //   2 ''     '' 1
-        //    \        /
-        //     3-'''-4
+    const currentRadius = tweened(radius, { duration: 200, easing: linear });
+    const currentThickness = tweened(thickness, {
+        duration: 200,
+        easing: linear,
+    });
 
-        let pathBuilder = new PathBuilder();
+    $: d = getSectorPath(
+        centerX,
+        centerY,
+        $currentRadius,
+        startAngle,
+        endAngle,
+        $currentThickness
+    );
+    $: toggleExpand(isExpanded);
 
-        // Move to 1
-        let point = polarToCartesian(centerX, centerY, radius, startAngle);
-        pathBuilder.moveTo(point);
-
-        // Arc to 2
-        point = polarToCartesian(centerX, centerY, radius, endAngle);
-        pathBuilder.arcCircularTo(
-            radius,
-            chooseArcFlag(endAngle - startAngle),
-            chooseSweepFlag(false),
-            point
-        );
-
-        let innerRadius = radius - thickness;
-
-        // Line to 3
-        point = polarToCartesian(centerX, centerY, innerRadius, endAngle);
-        pathBuilder.lineTo(point);
-
-        // Arc to 4
-        point = polarToCartesian(centerX, centerY, innerRadius, startAngle);
-
-        pathBuilder.arcCircularTo(
-            innerRadius,
-            chooseArcFlag(endAngle - startAngle),
-            chooseSweepFlag(true),
-            point
-        );
-
-        // close shape
-        pathBuilder.close();
-
-        return pathBuilder.toString();
+    function toggleExpand(expand: boolean) {
+        isExpanded = expand;
+        let extra = radius * 0.05;
+        currentRadius.set(isExpanded ? radius + extra : radius);
+        currentThickness.set(isExpanded ? thickness + 2 * extra : thickness);
     }
-    let d = getPathData();
 </script>
 
-<path fill={color ?? "#ff3e00"} {d} />
+<path
+    on:click
+    fill={color ?? "#ff3e00"}
+    stroke={$currentRadius !== radius ? "black" : "none"}
+    {d}
+/>
+
+<style>
+    path {
+        cursor: pointer;
+    }
+</style>
