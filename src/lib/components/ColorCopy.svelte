@@ -1,9 +1,9 @@
 <script lang="ts">
     import { fade } from "svelte/transition";
-    import { Color, convertToHex, convertToHsl, convertToRgb } from "../color";
+    import { HSL, convertToHex, convertToHsl, convertToRgb } from "../color";
     import { ColorFormat } from "../color";
 
-    export let color: Color;
+    export let color: HSL;
     export let format: ColorFormat;
 
     let colorElement: HTMLInputElement;
@@ -19,7 +19,7 @@
         isCopied = true;
         setTimeout(() => (showText = false), 1000);
     }
-    function getFormattedColor(color: Color, format: ColorFormat) {
+    function getFormattedColor(color: HSL, format: ColorFormat) {
         switch (format) {
             case ColorFormat.RGB:
                 if (color.isRGB()) return color;
@@ -33,7 +33,8 @@
     $: formattedColor = getFormattedColor(color, format);
 </script>
 
-<div>
+<div class="container">
+    <div class="color" style="background-color:{color.toString()}" />
     <input
         bind:this={colorElement}
         readonly
@@ -61,29 +62,41 @@
 </div>
 
 <style>
-    div {
+    .container {
         display: flex;
         flex-direction: row;
         align-items: center;
         padding: 0 20px;
         height: 34px;
     }
+    .color {
+        height: 55px;
+        width: 55px;
+        border-radius: 100%;
+        margin-right: -10px;
+        z-index: 1;
+    }
     input {
         font-family: "Fira Code", monospace;
-        border-radius: 20px 0 0 20px;
+        border-radius: 0;
         border: none;
         text-align: center;
         background-color: gainsboro;
         margin: 0;
         height: 100%;
+        padding-left: 15px;
     }
     button {
         height: 100%;
-        border-radius: 0 20px 20px 0;
+        border-radius: 0;
         border: none;
         padding: 0 20px;
         margin: 0;
         margin-right: 20px;
+        background-color: var(--medium-compliment-color);
+    }
+    button:hover {
+        background-color: var(--soft-compliment-color);
     }
     p {
         padding: 0 20px;

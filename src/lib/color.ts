@@ -27,6 +27,64 @@ export function allColorFormats() {
     return all;
 }
 
+export function getColors(mode: Mode, color: HSL) {
+    const colors = [color];
+    const { hue, saturation, lightness } = color;
+    let offset: number;
+    switch (mode) {
+        case Mode.Complimentary:
+            colors.push(complementaryHsl(color));
+            break;
+        case Mode.Monochromatic:
+            let rangeLeft = 100 - lightness;
+            let increment = rangeLeft / 3;
+            colors.push(
+                new HSL(
+                    hue,
+                    saturation,
+                    Math.round(lightness + increment)
+                )
+            );
+            colors.push(
+                new HSL(
+                    hue,
+                    saturation,
+                    Math.round(lightness + 2 * increment)
+                )
+            );
+            break;
+        case Mode.Analogous:
+            const offsetDegrees = 360 / 12;
+            colors.push(
+                new HSL(hue + offsetDegrees, saturation, lightness)
+            );
+            colors.push(
+                new HSL(hue + offsetDegrees * 2, saturation, lightness)
+            );
+            break;
+        case Mode.Triadic:
+            offset = 360 / 3;
+            colors.push(new HSL(hue + offset, saturation, lightness));
+            colors.push(
+                new HSL(hue + offset * 2, saturation, lightness)
+            );
+            break;
+        case Mode.Tetradic:
+            offset = 360 / 4;
+            colors.push(new HSL(hue + offset, saturation, lightness));
+            colors.push(
+                new HSL(hue + offset * 2, saturation, lightness)
+            );
+            colors.push(
+                new HSL(hue + offset * 3, saturation, lightness)
+            );
+            break;
+        default:
+            break;
+    }
+    return colors;
+}
+
 export function convertToHsl(color: Color) {
     if (color.isHSL())
         return color;

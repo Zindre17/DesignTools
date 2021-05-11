@@ -1,7 +1,6 @@
 <script lang="ts">
-    import { HSL } from "./lib/color";
-    import type { Color } from "./lib/color";
     import { createEventDispatcher, onMount } from "svelte";
+    import { HSL } from "../../color";
     import Sector from "./Sector.svelte";
 
     type SectorConfig = {
@@ -15,7 +14,7 @@
     export let radius: number;
     export let thickness: number;
 
-    const dispatch = createEventDispatcher<{ colorSelected: Color }>();
+    const dispatch = createEventDispatcher<{ colorSelected: HSL }>();
 
     let saturation = 100;
     let lightness = 50;
@@ -47,26 +46,49 @@
 
     $: sectorConfig = createSectorConfigs(sectorCount, saturation, lightness);
     let selected = 0;
-    $: selectedColor = sectorConfig[selected]?.color;
-    $: dispatch("colorSelected", sectorConfig[selected]?.color);
+    $: selectedColor = sectorConfig[selected].color;
+    $: dispatch("colorSelected", sectorConfig[selected].color);
+
+    export let expanded: number[] = [];
 
     onMount(() => {
         dispatch("colorSelected", selectedColor);
     });
+
+    function handleClick(e: MouseEvent) {
+        let svgPosition = svg.getBoundingClientRect();
+        let x = e.x - svgPosition.left;
+        let y = e.y - svgPosition.top;
+        let theta = Math.atan2(offset - y, x - offset);
+        let degrees = Math.round((theta / Math.PI) * 180);
+        if (degrees < 0) degrees += 360;
+        selected = sectorConfig.findIndex((c) => c.endAngle >= degrees);
+    }
+    let svg: SVGSVGElement;
+    let isMouseDown = false;
 </script>
 
 <div class="container">
-    <svg viewBox="{-offset} {-offset} {size} {size}" height={size} width={size}>
+    <svg
+        bind:this={svg}
+        on:click={handleClick}
+        on:mousemove={isMouseDown && handleClick}
+        on:mousedown={() => (isMouseDown = true)}
+        on:mouseup={() => (isMouseDown = false)}
+        viewBox="{-offset} {-offset} {size} {size}"
+        height={size}
+        width={size}
+    >
         {#each sectorConfig as { startAngle, endAngle, color }, i}
             <Sector
                 {radius}
                 {thickness}
                 {startAngle}
                 {endAngle}
-                isExpanded={selected === i}
+                isExpanded={selected === i || expanded.includes(startAngle)}
                 color={color.toString()}
                 on:click={() => {
-                    selected = i;
+                    // selected = i;
                 }}
             />
         {/each}
@@ -99,6 +121,7 @@
 <style>
     .container {
         position: relative;
+        display: flex;
     }
     .container div {
         position: absolute;
