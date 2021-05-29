@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ColorHelper from "./lib/components/ColorHelper.svelte";
+	import Contrast from "./lib/components/Contrast.svelte";
 
 	export let name: string;
 </script>
@@ -7,6 +8,7 @@
 <main>
 	<h1><span>Hello</span> {name}!</h1>
 	<ColorHelper />
+	<!-- <Contrast /> -->
 </main>
 
 <style>
